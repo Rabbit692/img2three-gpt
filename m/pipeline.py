@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from renderer_client import Renderer, RenderOptions, RenderRejected
-from openai import APIError
+from openai import APIConnectionError, APIError
 from witness_client import WitnessError
 
 HERE = Path(__file__).resolve().parent
@@ -152,6 +152,8 @@ class Run:
         rate = PRICING["models"][model]
         try:
             res = self.calls.create(**kw)
+        except APIConnectionError:
+            raise
         except (WitnessError, APIError) as e:
             if isinstance(e, WitnessError) and e.source != "provider":
                 raise
